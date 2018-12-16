@@ -4,6 +4,10 @@ namespace Supperxin.ListenNews.Models
 {
     public class Item
     {
+        public Item()
+        {
+            this.CrawledTime = DateTime.Now;
+        }
         public int Id { get; set; }
         public string Url { get; set; }
         public string Title { get; set; }

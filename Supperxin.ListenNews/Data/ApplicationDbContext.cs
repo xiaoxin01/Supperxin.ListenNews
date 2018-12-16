@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Supperxin.ListenNews.Models;
 
 namespace Supperxin.ListenNews.Data
 {
@@ -12,5 +13,6 @@ namespace Supperxin.ListenNews.Data
             : base(options)
         {
         }
+        public DbSet<Supperxin.ListenNews.Models.Item> Item { get; set; }
     }
 }
