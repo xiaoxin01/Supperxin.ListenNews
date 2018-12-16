@@ -39,7 +39,44 @@ namespace Supperxin.ListenNews.Controllers
                 return NotFound();
             }
 
-            return item;
+            var sChar = System.IO.Path.DirectorySeparatorChar;
+            var audio = $"audios{sChar}{item.Source}{sChar}{item.Id}.mp3";
+            if (System.IO.File.Exists(audio))
+            {
+                return File(System.IO.File.ReadAllBytes(audio), "application/octet-stream", $"{item.Id}.mp3");
+            }
+
+            var audioString = $"{item.Title}。{item.Content}";
+
+
+            // 设置APPID/AK/SK
+            var APP_ID = "15174756";
+            var API_KEY = "ZixGBp4NKBG1vq5Azec2LbEB";
+            var SECRET_KEY = "FS0wCOyvvIzrAc11Or8uPVzVL2w6zHUe";
+
+            var _ttsClient = new Baidu.Aip.Speech.Tts(API_KEY, SECRET_KEY);
+            _ttsClient.Timeout = 60000;  // 修改超时时间
+
+            // 可选参数
+            var option = new Dictionary<string, object>()
+            {
+                {"spd", 5}, // 语速
+                {"vol", 7}, // 音量
+                {"per", 4}  // 发音人，4：情感度丫丫童声
+            };
+            var result = _ttsClient.Synthesis(audioString, option);
+
+            if (result.ErrorCode == 0)  // 或 result.Success
+            {
+                if (!System.IO.Directory.Exists(System.IO.Path.GetDirectoryName(audio)))
+                {
+                    System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(audio));
+                }
+                System.IO.File.WriteAllBytes(audio, result.Data);
+                return File(result.Data, "application/octet-stream", $"{item.Id}.mp3");
+            }
+
+            return NotFound();
         }
 
         // // PUT: api/Items/5
