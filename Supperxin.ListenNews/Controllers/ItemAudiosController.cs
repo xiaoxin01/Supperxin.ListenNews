@@ -40,7 +40,7 @@ namespace Supperxin.ListenNews.Controllers
             }
 
             var sChar = System.IO.Path.DirectorySeparatorChar;
-            var audio = $"audios{sChar}{item.Source}{sChar}{item.Id}.mp3";
+            var audio = $"wwwroot{sChar}audios{sChar}{item.Source}{sChar}{item.Id}.mp3";
             if (System.IO.File.Exists(audio))
             {
                 return File(System.IO.File.ReadAllBytes(audio), "application/octet-stream", $"{item.Id}.mp3");
