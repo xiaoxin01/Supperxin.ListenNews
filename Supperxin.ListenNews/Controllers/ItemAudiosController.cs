@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -21,12 +22,12 @@ namespace Supperxin.ListenNews.Controllers
             _context = context;
         }
 
-        // // GET: api/Items
-        // [HttpGet]
-        // public async Task<ActionResult<IEnumerable<Item>>> GetItem()
-        // {
-        //     return await _context.Item.OrderByDescending(i => i.Id).Take(100).ToListAsync();
-        // }
+        // GET: api/Items
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Item>>> GetItem(int index, int count)
+        {
+            return await _context.Item.Where(i => i.Id <= index).OrderByDescending(i => i.Id).Take(count).ToListAsync();
+        }
 
         // GET: api/Items/5
         [HttpGet("{id}")]
@@ -40,10 +41,10 @@ namespace Supperxin.ListenNews.Controllers
             }
 
             var sChar = System.IO.Path.DirectorySeparatorChar;
-            var audio = $"wwwroot{sChar}audios{sChar}{item.Source}{sChar}{item.Id}.mp3";
+            var audio = $"audios{sChar}{item.Source}{sChar}{item.Id}.mp3";
             if (System.IO.File.Exists(audio))
             {
-                return File(System.IO.File.ReadAllBytes(audio), "application/octet-stream", $"{item.Id}.mp3");
+                return File(System.IO.File.ReadAllBytes(audio), "audio/mpeg", $"{item.Id}.mp3");
             }
 
             var audioString = $"{item.Title}。{item.Content}";
@@ -73,7 +74,7 @@ namespace Supperxin.ListenNews.Controllers
                     System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(audio));
                 }
                 System.IO.File.WriteAllBytes(audio, result.Data);
-                return File(result.Data, "application/octet-stream", $"{item.Id}.mp3");
+                return File(result.Data, "audio/mpeg", $"{item.Id}.mp3");
             }
 
             return NotFound();

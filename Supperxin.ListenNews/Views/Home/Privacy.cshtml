@@ -60,40 +60,27 @@
 				    </div>
 				  </div>
 				  <div class="large-6 medium-6 small-12 cell" id="amplitude-right">
-				    <div class="song amplitude-song-container amplitude-play-pause" amplitude-song-index="0">
-				      <div class="song-now-playing-icon-container">
-				        <div class="play-button-container">
-
-				        </div>
-				        <img class="now-playing" src="~/lib/player/img/now-playing.svg"/>
-				      </div>
-				      <div class="song-meta-data">
-				        <span class="song-title">Risin' High (feat Raashan Ahmad)</span>
-				        <span class="song-artist">Ancient Astronauts</span>
-				      </div>
-				      <a href="https://switchstancerecordings.bandcamp.com/track/risin-high-feat-raashan-ahmad" class="bandcamp-link" target="_blank">
-				        <img class="bandcamp-grey" src="~/lib/player/img/bandcamp-grey.svg"/>
-				        <img class="bandcamp-white" src="~/lib/player/img/bandcamp-white.svg"/>
-				      </a>
-				      <span class="song-duration">3:30</span>
-				    </div>
-				    <div class="song amplitude-song-container amplitude-play-pause" amplitude-song-index="1">
-				      <div class="song-now-playing-icon-container">
-				        <div class="play-button-container">
-
-				        </div>
-				        <img class="now-playing" src="~/lib/player/img/now-playing.svg"/>
-				      </div>
-				      <div class="song-meta-data">
-				        <span class="song-title">The Gun</span>
-				        <span class="song-artist">Lorn</span>
-				      </div>
-				      <a href="https://lorn.bandcamp.com/" class="bandcamp-link" target="_blank">
-				        <img class="bandcamp-grey" src="~/lib/player/img/bandcamp-grey.svg"/>
-				        <img class="bandcamp-white" src="~/lib/player/img/bandcamp-white.svg"/>
-				      </a>
-				      <span class="song-duration">3:16</span>
-				    </div>
+						@{int i = 0;}
+						@foreach (var item in @Model)
+						{
+							<div class="song amplitude-song-container amplitude-play-pause" amplitude-song-index=@i>
+								<div class="song-now-playing-icon-container">
+									<div class="play-button-container">
+									</div>
+									<img class="now-playing" src="~/lib/player/img/now-playing.svg"/>
+								</div>
+								<div class="song-meta-data">
+									<span class="song-title">@item.name</span>
+									<span class="song-artist">@item.artist</span>
+								</div>
+								<a href="https://switchstancerecordings.bandcamp.com/track/risin-high-feat-raashan-ahmad" class="bandcamp-link" target="_blank">
+									<img class="bandcamp-grey" src="~/lib/player/img/bandcamp-grey.svg"/>
+									<img class="bandcamp-white" src="~/lib/player/img/bandcamp-white.svg"/>
+								</a>
+								<span class="song-duration">3:30</span>
+							</div>
+							{i++;}
+						}
 				  </div>
 				</div>
 			</div>
@@ -107,23 +94,19 @@
 @section Scripts {
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/amplitudejs@3.3.1/dist/amplitude.min.js"></script>
     <script>
+			$(function(){
+				var playCount = 94;
         Amplitude.init({
-		"songs": [
-			{
-				"name": "Song Name 1",
-				"artist": "Artist Name",
-				"album": "Album Name",
-				"url": "/audios/cyzone/94.mp3",
-				"cover_art_url": "/cover/art/url.jpg"
-			},
-			{
-				"name": "Song Name 1",
-				"artist": "Artist Name",
-				"album": "Album Name",
-				"url": "/audios/cyzone/94.mp3",
-				"cover_art_url": "/cover/art/url.jpg"
-			}
-		]
-	});
+					"songs": @Html.Raw(Json.Serialize(@Model)),
+					"callbacks": {
+						'before_stop': function(){
+							console.log( Amplitude.getActiveIndex());
+							if (Amplitude.getActiveIndex() == 0) {
+								window.location.href = "http://localhost:5000/Home/Privacy?index=4";
+							}
+						}
+					}
+				});
+			});
     </script>
 }
