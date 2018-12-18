@@ -97,6 +97,7 @@
 			$(function(){
 				var playCount = 94;
         Amplitude.init({
+					"autoplay": true,
 					"songs": @Html.Raw(Json.Serialize(@Model)),
 					"callbacks": {
 						'before_stop': function(){

@@ -41,10 +41,11 @@ namespace Supperxin.ListenNews.Controllers
             }
 
             var sChar = System.IO.Path.DirectorySeparatorChar;
-            var audio = $"audios{sChar}{item.Source}{sChar}{item.Id}.mp3";
+            var audio = $"wwwroot{sChar}audios{sChar}{item.Source}{sChar}{item.Id}.mp3";
             if (System.IO.File.Exists(audio))
             {
-                return File(System.IO.File.ReadAllBytes(audio), "audio/mpeg", $"{item.Id}.mp3");
+                //return File(System.IO.File.ReadAllBytes(audio), "audio/mpeg", $"{item.Id}.mp3");
+                return Redirect($"/audios/{item.Source}/{item.Id}.mp3");
             }
 
             var audioString = $"{item.Title}。{item.Content}";
@@ -74,7 +75,9 @@ namespace Supperxin.ListenNews.Controllers
                     System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(audio));
                 }
                 System.IO.File.WriteAllBytes(audio, result.Data);
-                return File(result.Data, "audio/mpeg", $"{item.Id}.mp3");
+
+                return Redirect($"/audios/{item.Source}/{item.Id}.mp3");
+                //return File(result.Data, "audio/mpeg", $"{item.Id}.mp3");
             }
 
             return NotFound();
