@@ -73,11 +73,11 @@
 									<span class="song-title">@item.name</span>
 									<span class="song-artist">@item.artist</span>
 								</div>
-								<a href="https://switchstancerecordings.bandcamp.com/track/risin-high-feat-raashan-ahmad" class="bandcamp-link" target="_blank">
+								<a class="bandcamp-link" target="_blank">
 									<img class="bandcamp-grey" src="~/lib/player/img/bandcamp-grey.svg"/>
 									<img class="bandcamp-white" src="~/lib/player/img/bandcamp-white.svg"/>
 								</a>
-								<span class="song-duration">3:30</span>
+								<span class="song-duration">@item.id</span>
 							</div>
 							{i++;}
 						}
@@ -100,9 +100,10 @@
 					"songs": @Html.Raw(Json.Serialize(@Model)),
 					"callbacks": {
 						'before_stop': function(){
-							console.log( Amplitude.getActiveIndex());
-							if (Amplitude.getActiveIndex() == 0) {
-								window.location.href = "http://localhost:5000/Home/Privacy?index=4";
+							console.log("getActiveIndex: " + Amplitude.getActiveIndex());
+							if (Amplitude.getActiveIndex() == 0 && Amplitude.getSongPlayedPercentage() == 100) {
+								var audio = Amplitude.getActiveSongMetadata();
+								window.location.href = "http://localhost:5000/Home/Privacy?count=2&index=" + (audio.id-1);
 							}
 						}
 					}
