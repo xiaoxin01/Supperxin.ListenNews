@@ -31,7 +31,7 @@ namespace Supperxin.ListenNews.Controllers
         }
         public async Task<IActionResult> Privacy([FromQuery]int? index, [FromQuery]int? count)
         {
-            var newAudios = await _itemAudioController.GetItem(index ?? 100, count ?? 10);
+            var newAudios = await _itemAudioController.GetItem(index ?? int.MaxValue, count ?? 10);
             var audios = new List<Audio>();
             newAudios.Value.ToList().ForEach(a =>
             {

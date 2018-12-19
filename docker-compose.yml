@@ -1,0 +1,24 @@
+version: '2'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: ./Supperxin.ListenNews/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+    volumes:
+      - /data/listemnews/audios:/app/wwwroot/audios
+    links:
+      - db
+    ports:
+      - "5007:80"
+  db:
+    image: postgres:alpine
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: postgres2018
+    volumes:
+      - /data/listemnews/db:/var/lib/postgresql/data
+    ports:
+      - "5432"

@@ -46,8 +46,15 @@ namespace Supperxin.ListenNews
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime,
+            ApplicationDbContext dbContext)
         {
+            if (System.Environment.GetEnvironmentVariable("UPDATE_DB") == "TRUE")
+            {
+                Console.WriteLine($"Update database for env: {env.EnvironmentName}");
+                dbContext.Database.Migrate();
+                appLifetime.StopApplication();
+            }
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
