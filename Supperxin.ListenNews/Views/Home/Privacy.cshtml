@@ -95,7 +95,6 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/amplitudejs@3.3.1/dist/amplitude.min.js"></script>
     <script>
 			$(function(){
-				var playCount = 94;
         Amplitude.init({
 					"autoplay": true,
 					"songs": @Html.Raw(Json.Serialize(@Model)),
@@ -104,11 +103,11 @@
 							console.log("getActiveIndex: " + Amplitude.getActiveIndex());
 							if (Amplitude.getActiveIndex() == 0 && Amplitude.getSongPlayedPercentage() == 100) {
 								var audio = Amplitude.getActiveSongMetadata();
-								window.location.href = "http://localhost:5000/Home/Privacy?count=2&index=" + (audio.id-1);
+								window.location.href = "/Home/Privacy?count=2&index=" + (audio.id-1);
 							}
 						}
 					}
-				});
+				});		
 			});
     </script>
 }
