@@ -14,5 +14,6 @@ namespace Supperxin.ListenNews.Data
         {
         }
         public DbSet<Supperxin.ListenNews.Models.Item> Item { get; set; }
+        public DbSet<Supperxin.ListenNews.Models.ListenHistory> ListenHistory { get; set; }
     }
 }

@@ -26,7 +26,14 @@ namespace Supperxin.ListenNews.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Item>>> GetItem(int index, int count)
         {
-            return await _context.Item.Where(i => i.Id <= index).OrderByDescending(i => i.Id).Take(count).ToListAsync();
+            // select item with no listen history.
+            var query = from i in _context.Item
+                        join l in _context.ListenHistory on i.Id equals l.ItemId into ItemListenHistory
+                        from il in ItemListenHistory.DefaultIfEmpty()
+                        where il == null
+                        select i;
+
+            return await query.Where(i => i.Id <= index).OrderByDescending(i => i.Id).Take(count).ToListAsync();
         }
 
         // GET: api/Items/5
@@ -39,6 +46,11 @@ namespace Supperxin.ListenNews.Controllers
             {
                 return NotFound();
             }
+
+            // add listen history
+            var listenHistory = new ListenHistory() { ItemId = item.Id, UserId = null };
+            await _context.ListenHistory.AddAsync(listenHistory);
+            await _context.SaveChangesAsync();
 
             var sChar = System.IO.Path.DirectorySeparatorChar;
             var audio = $"wwwroot{sChar}audios{sChar}{item.Source}{sChar}{item.Id}.mp3";
