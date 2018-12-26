@@ -75,8 +75,8 @@ namespace Supperxin.ListenNews.Controllers
             var option = new Dictionary<string, object>()
             {
                 {"spd", 5}, // 语速
-                {"vol", 7}, // 音量
-                {"per", 4}  // 发音人，4：情感度丫丫童声
+                {"vol", 10}, // 音量
+                {"per", 1}  // 发音人，4：情感度丫丫童声
             };
             var result = _ttsClient.Synthesis(audioString, option);
 
