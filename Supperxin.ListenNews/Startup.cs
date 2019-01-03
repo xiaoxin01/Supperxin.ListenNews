@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Supperxin.ListenNews.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Supperxin.ListenNews.Services;
 
 namespace Supperxin.ListenNews
 {
@@ -41,6 +42,8 @@ namespace Supperxin.ListenNews
             services.AddDefaultIdentity<IdentityUser>()
                 .AddDefaultUI(UIFramework.Bootstrap4)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            services.AddTransient<IAudioService, BaiduAudioService>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }

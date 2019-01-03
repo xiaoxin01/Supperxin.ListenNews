@@ -16,5 +16,7 @@ namespace Supperxin.ListenNews.Models
         public string Source { get; set; }
         public DateTime Created { get; set; }
         public DateTime CrawledTime { get; set; }
+        public int AudioStatus { get; set; }
+        public string AudioErrorMessage { get; set; }
     }
 }

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Supperxin.ListenNews.Data;
 using Supperxin.ListenNews.Models;
+using Supperxin.ListenNews.Services;
 
 namespace Supperxin.ListenNews.Controllers
 {
@@ -16,24 +17,58 @@ namespace Supperxin.ListenNews.Controllers
     public class ItemAudiosController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IAudioService _audioService;
 
-        public ItemAudiosController(ApplicationDbContext context)
+        public ItemAudiosController(ApplicationDbContext context, IAudioService audioService)
         {
             _context = context;
+            _audioService = audioService;
         }
 
         // GET: api/Items
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Item>>> GetItem(int index, int count)
+        public async Task<ActionResult<IEnumerable<Item>>> GetItem(int index, int count, string genericAudio = null)
         {
-            // select item with no listen history.
-            var query = from i in _context.Item
-                        join l in _context.ListenHistory on i.Id equals l.ItemId into ItemListenHistory
-                        from il in ItemListenHistory.DefaultIfEmpty()
-                        where il == null
-                        select i;
+            if (string.IsNullOrWhiteSpace(genericAudio))
+            {
+                // select item with no listen history.
+                var query = from i in _context.Item
+                            join l in _context.ListenHistory on i.Id equals l.ItemId into ItemListenHistory
+                            from il in ItemListenHistory.DefaultIfEmpty()
+                            where il == null && i.AudioStatus == 1
+                            select i;
 
-            return await query.Where(i => i.Id <= index).OrderByDescending(i => i.Id).Take(count).ToListAsync();
+                return await query.Where(i => i.Id <= index).OrderByDescending(i => i.Id).Take(count).ToListAsync();
+            }
+            else
+            {
+                while (true)
+                {
+                    var noAudioQuery = from i in _context.Item
+                                       where i.AudioStatus == 0
+                                       select i;
+
+                    var audioItems = await noAudioQuery.Take(10).ToListAsync();
+                    if (audioItems.Count == 0)
+                    {
+                        break;
+                    }
+                    audioItems.ForEach(item =>
+                    {
+                        Console.WriteLine($"generate audio {item.Id}");
+                        var result = GenerateAudio(item);
+                        item.AudioStatus = result.Success ? 1 : -1;
+                        item.AudioErrorMessage = result.Success ? null : result.ErrorMsg;
+                        // QPS=100
+                        System.Threading.Thread.Sleep(10);
+                    });
+
+                    _context.UpdateRange(audioItems);
+                    await _context.SaveChangesAsync();
+                }
+
+                return Ok("Done");
+            }
         }
 
         // GET: api/Items/5
@@ -47,38 +82,45 @@ namespace Supperxin.ListenNews.Controllers
                 return NotFound();
             }
 
-            // add listen history
-            var listenHistory = new ListenHistory() { ItemId = item.Id, UserId = null };
-            await _context.ListenHistory.AddAsync(listenHistory);
-            await _context.SaveChangesAsync();
-
-            var sChar = System.IO.Path.DirectorySeparatorChar;
-            var audio = $"wwwroot{sChar}audios{sChar}{item.Source}{sChar}{item.Id}.mp3";
+            string audio = GetAudioFileName(item);
             if (System.IO.File.Exists(audio))
             {
+                await MakeItemListen(item);
                 return File(System.IO.File.ReadAllBytes(audio), "audio/mpeg", $"{item.Id}.mp3", true);
                 //return Redirect($"/audios/{item.Source}/{item.Id}.mp3");
             }
 
-            var audioString = $"{item.Title}。{item.Content}";
+            var result = GenerateAudio(item);
 
-
-            // 设置APPID/AK/SK
-            var APP_ID = "15174756";
-            var API_KEY = "ZixGBp4NKBG1vq5Azec2LbEB";
-            var SECRET_KEY = "FS0wCOyvvIzrAc11Or8uPVzVL2w6zHUe";
-
-            var _ttsClient = new Baidu.Aip.Speech.Tts(API_KEY, SECRET_KEY);
-            _ttsClient.Timeout = 60000;  // 修改超时时间
-
-            // 可选参数
-            var option = new Dictionary<string, object>()
+            if (result.ErrorCode == 0)
             {
-                {"spd", 5}, // 语速
-                {"vol", 10}, // 音量
-                {"per", 1}  // 发音人，4：情感度丫丫童声
-            };
-            var result = _ttsClient.Synthesis(audioString, option);
+                await MakeItemListen(item);
+                return File(result.Data, "audio/mpeg", $"{item.Id}.mp3", true);
+            }
+
+            return NotFound();
+        }
+
+        private async Task MakeItemListen(Item item)
+        {
+            // add listen history
+            var listenHistory = new ListenHistory() { ItemId = item.Id, UserId = null };
+            await _context.ListenHistory.AddAsync(listenHistory);
+            await _context.SaveChangesAsync();
+        }
+
+        private static string GetAudioFileName(Item item)
+        {
+            var sChar = System.IO.Path.DirectorySeparatorChar;
+            var audio = $"wwwroot{sChar}audios{sChar}{item.Source}{sChar}{item.Id}.mp3";
+            return audio;
+        }
+
+        private Baidu.Aip.Speech.TtsResponse GenerateAudio(Item item)
+        {
+            var audio = GetAudioFileName(item);
+            var audioString = $"{item.Title}。{item.Content}";
+            var result = _audioService.GeneriteAudio(audioString);
 
             if (result.ErrorCode == 0)  // 或 result.Success
             {
@@ -87,12 +129,9 @@ namespace Supperxin.ListenNews.Controllers
                     System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(audio));
                 }
                 System.IO.File.WriteAllBytes(audio, result.Data);
-
-                //return Redirect($"/audios/{item.Source}/{item.Id}.mp3");
-                return File(result.Data, "audio/mpeg", $"{item.Id}.mp3", true);
             }
 
-            return NotFound();
+            return result;
         }
 
         // // PUT: api/Items/5

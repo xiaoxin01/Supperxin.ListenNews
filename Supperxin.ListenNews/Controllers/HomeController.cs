@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Supperxin.ListenNews.Data;
 using Supperxin.ListenNews.Models;
+using Supperxin.ListenNews.Services;
 
 namespace Supperxin.ListenNews.Controllers
 {
@@ -13,9 +14,9 @@ namespace Supperxin.ListenNews.Controllers
     {
         private readonly ItemAudiosController _itemAudioController;
 
-        public HomeController(ApplicationDbContext context)
+        public HomeController(ApplicationDbContext context, IAudioService audioService)
         {
-            _itemAudioController = new ItemAudiosController(context);
+            _itemAudioController = new ItemAudiosController(context, audioService);
         }
         public IActionResult Index()
         {
