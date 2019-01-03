@@ -18,6 +18,7 @@ namespace Supperxin.ListenNews.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IAudioService _audioService;
+        private readonly object _generateAudioLock = new object();
 
         public ItemAudiosController(ApplicationDbContext context, IAudioService audioService)
         {
@@ -42,29 +43,32 @@ namespace Supperxin.ListenNews.Controllers
             }
             else
             {
-                while (true)
+                lock (_generateAudioLock)
                 {
-                    var noAudioQuery = from i in _context.Item
-                                       where i.AudioStatus == 0
-                                       select i;
-
-                    var audioItems = await noAudioQuery.Take(10).ToListAsync();
-                    if (audioItems.Count == 0)
+                    while (true)
                     {
-                        break;
+                        var noAudioQuery = from i in _context.Item
+                                           where i.AudioStatus == 0
+                                           select i;
+
+                        var audioItems = noAudioQuery.Take(10).ToList();
+                        if (audioItems.Count == 0)
+                        {
+                            break;
+                        }
+                        audioItems.ForEach(item =>
+                        {
+                            Console.WriteLine($"generate audio {item.Id}");
+                            var result = GenerateAudio(item);
+                            item.AudioStatus = result.Success ? 1 : -1;
+                            item.AudioErrorMessage = result.Success ? null : result.ErrorMsg;
+                            // QPS=100
+                            System.Threading.Thread.Sleep(10);
+                        });
+
+                        _context.UpdateRange(audioItems);
+                        _context.SaveChanges();
                     }
-                    audioItems.ForEach(item =>
-                    {
-                        Console.WriteLine($"generate audio {item.Id}");
-                        var result = GenerateAudio(item);
-                        item.AudioStatus = result.Success ? 1 : -1;
-                        item.AudioErrorMessage = result.Success ? null : result.ErrorMsg;
-                        // QPS=100
-                        System.Threading.Thread.Sleep(10);
-                    });
-
-                    _context.UpdateRange(audioItems);
-                    await _context.SaveChangesAsync();
                 }
 
                 return Ok("Done");
