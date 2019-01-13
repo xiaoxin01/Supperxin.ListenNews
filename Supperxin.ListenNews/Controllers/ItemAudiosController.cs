@@ -75,8 +75,6 @@ namespace Supperxin.ListenNews.Controllers
             }
         }
 
-        // GET: api/Items
-        [HttpGet]
         public async Task<int> GetTotalUnlisten()
         {
             // select item with no listen history.
