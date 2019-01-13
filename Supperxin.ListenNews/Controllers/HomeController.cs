@@ -23,15 +23,9 @@ namespace Supperxin.ListenNews.Controllers
             return View();
         }
 
-        public class Audio
-        {
-            public int id { get; set; }
-            public string name { get; set; }
-            public string artist { get; set; }
-            public string url { get; set; }
-        }
         public async Task<IActionResult> Privacy([FromQuery]int? index, [FromQuery]int? count)
         {
+            var totalUnlisten = await _itemAudioController.GetTotalUnlisten();
             var newAudios = await _itemAudioController.GetItem(index ?? int.MaxValue, count ?? 10);
             var audios = new List<Audio>();
             newAudios.Value.ToList().ForEach(a =>
@@ -41,11 +35,16 @@ namespace Supperxin.ListenNews.Controllers
                     id = a.Id,
                     name = a.Title,
                     artist = a.Source,
-                    url = $"/api/ItemAudios/{a.Id}"
+                    url = $"/api/ItemAudios/{a.Id}",
+                    created = a.Created
                 });
             });
 
-            return View(audios);
+            var viewModel = new ListenViewModel();
+            viewModel.Audios = audios;
+            viewModel.TotalUnlisten = totalUnlisten;
+
+            return View(viewModel);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

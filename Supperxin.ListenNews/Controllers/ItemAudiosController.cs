@@ -75,6 +75,19 @@ namespace Supperxin.ListenNews.Controllers
             }
         }
 
+        // GET: api/Items
+        [HttpGet]
+        public async Task<int> GetTotalUnlisten()
+        {
+            // select item with no listen history.
+            var query = from i in _context.Item
+                        join l in _context.ListenHistory on i.Id equals l.ItemId into ItemListenHistory
+                        from il in ItemListenHistory.DefaultIfEmpty()
+                        where il == null && i.AudioStatus == 1
+                        select i;
+            return await query.CountAsync();
+        }
+
         // GET: api/Items/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Item>> GetItem(int id)
