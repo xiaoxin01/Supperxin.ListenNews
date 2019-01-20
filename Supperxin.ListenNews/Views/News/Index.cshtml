@@ -5,7 +5,7 @@
     var index = 1;
 }
 
-<div class="btn-group" role="group" aria-label="Basic example">
+<div>
     @foreach (var dateCount in Model.Dates) {
         <a class="btn btn-light" asp-route-date="@dateCount.DateString">@dateCount.DateString <span class="badge">@dateCount.Count</span></a>
     }

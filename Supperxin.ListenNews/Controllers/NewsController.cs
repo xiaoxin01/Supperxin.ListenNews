@@ -44,7 +44,7 @@ namespace Supperxin.ListenNews.Controllers
                         {
                             DateString = g.Key.ToString("yyyy-MM-dd"),
                             Count = g.Count()
-                        }).Take(10).ToArrayAsync();
+                        }).Take(30).ToArrayAsync();
             });
             //.GroupBy(i => i.Created.Date).OrderByDescending(i => i.Key).Take(10).SelectMany().ToArrayAsync();
 
