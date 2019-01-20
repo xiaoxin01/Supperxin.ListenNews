@@ -45,6 +45,8 @@ namespace Supperxin.ListenNews
 
             services.AddTransient<IAudioService, BaiduAudioService>();
 
+            services.AddMemoryCache();
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 

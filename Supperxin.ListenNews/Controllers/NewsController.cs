@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Supperxin.ListenNews.Data;
 using Supperxin.ListenNews.Models;
 
@@ -13,10 +14,12 @@ namespace Supperxin.ListenNews.Controllers
     public class NewsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private IMemoryCache _cache;
 
-        public NewsController(ApplicationDbContext context)
+        public NewsController(ApplicationDbContext context, IMemoryCache cache)
         {
             _context = context;
+            _cache = cache;
         }
 
         // GET: News
@@ -28,14 +31,21 @@ namespace Supperxin.ListenNews.Controllers
 
             var viewModel = new NewsViewModel();
             viewModel.News = await _context.Item.Where(i => i.Created >= dateStart && i.Created < dateEnd).Take(120).ToArrayAsync();
-            viewModel.Dates = await (from item in _context.Item
-                                     group item by item.Created.Date into g
-                                     orderby g.Key descending
-                                     select new DateCount
-                                     {
-                                         DateString = g.Key.ToString("yyyy-MM-dd"),
-                                         Count = g.Count()
-                                     }).Take(10).ToArrayAsync();
+            viewModel.Dates = await _cache.GetOrCreateAsync("NewsDates", entry =>
+            {
+                entry.SlidingExpiration = TimeSpan.FromHours(1);
+
+                Console.WriteLine("create cache for news dates.");
+
+                return (from item in _context.Item
+                        group item by item.Created.Date into g
+                        orderby g.Key descending
+                        select new DateCount
+                        {
+                            DateString = g.Key.ToString("yyyy-MM-dd"),
+                            Count = g.Count()
+                        }).Take(10).ToArrayAsync();
+            });
             //.GroupBy(i => i.Created.Date).OrderByDescending(i => i.Key).Take(10).SelectMany().ToArrayAsync();
 
             return View(viewModel);
