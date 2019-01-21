@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Supperxin.ListenNews.Models
 {
@@ -18,5 +19,8 @@ namespace Supperxin.ListenNews.Models
         public DateTime CrawledTime { get; set; }
         public int AudioStatus { get; set; }
         public string AudioErrorMessage { get; set; }
+
+        [NotMapped]
+        public int FavoriteId { get; set; }
     }
 }

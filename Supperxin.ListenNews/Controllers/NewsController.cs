@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -15,11 +16,13 @@ namespace Supperxin.ListenNews.Controllers
     {
         private readonly ApplicationDbContext _context;
         private IMemoryCache _cache;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public NewsController(ApplicationDbContext context, IMemoryCache cache)
+        public NewsController(ApplicationDbContext context, IMemoryCache cache, UserManager<IdentityUser> userManager)
         {
             _context = context;
             _cache = cache;
+            _userManager = userManager;
         }
 
         // GET: News
@@ -31,6 +34,17 @@ namespace Supperxin.ListenNews.Controllers
 
             var viewModel = new NewsViewModel();
             viewModel.News = await _context.Item.Where(i => i.Created >= dateStart && i.Created < dateEnd).Take(120).ToArrayAsync();
+            if (null != User)
+            {
+                var user = _userManager.GetUserAsync(User);
+                var query = from item in _context.Item
+                            join favorite in _context.Favorite on item.Id equals favorite.ItemId into itemsWithFavorite
+                            from itemWithFavorite in itemsWithFavorite.DefaultIfEmpty()
+                            where item.Created >= dateStart && item.Created < dateEnd
+                            select new { Item = item, Favorite = itemWithFavorite };
+
+                viewModel.News = query.ToList().Select(x => { if (null != x.Favorite) x.Item.FavoriteId = x.Favorite.Id; return x.Item; }).ToArray();
+            }
             viewModel.Dates = await _cache.GetOrCreateAsync("NewsDates", entry =>
             {
                 entry.SlidingExpiration = TimeSpan.FromHours(1);
