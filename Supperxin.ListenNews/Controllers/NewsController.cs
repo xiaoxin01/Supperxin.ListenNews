@@ -17,6 +17,8 @@ namespace Supperxin.ListenNews.Controllers
         private readonly ApplicationDbContext _context;
         private IMemoryCache _cache;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly int PageSize = 120;
+        private readonly int DateSize = 30;
 
         public NewsController(ApplicationDbContext context, IMemoryCache cache, UserManager<IdentityUser> userManager)
         {
@@ -33,13 +35,13 @@ namespace Supperxin.ListenNews.Controllers
             var dateEnd = queryDate.Date.AddDays(1);
 
             var viewModel = new NewsViewModel();
-            if (null == User)
+            var user = await _userManager.GetUserAsync(User);
+            if (null == user)
             {
-                viewModel.News = await _context.Item.Where(i => i.Created >= dateStart && i.Created < dateEnd).Take(120).ToArrayAsync();
+                viewModel.News = await _context.Item.Where(i => i.Created >= dateStart && i.Created < dateEnd).Take(PageSize).ToArrayAsync();
             }
             else
             {
-                var user = await _userManager.GetUserAsync(User);
                 // query items with user's favorite status
                 var query = from item in _context.Item
                             join favorite in (from f in _context.Favorite where f.UserId == user.Id && !f.Deleted select f)
@@ -48,7 +50,7 @@ namespace Supperxin.ListenNews.Controllers
                             where item.Created >= dateStart && item.Created < dateEnd
                             select new { Item = item, Favorite = itemWithFavorite };
 
-                viewModel.News = (await query.ToListAsync()).Select(x => { if (null != x.Favorite) x.Item.FavoriteId = x.Favorite.Id; return x.Item; }).ToArray();
+                viewModel.News = (await query.ToListAsync()).Select(x => { if (null != x.Favorite) x.Item.FavoriteId = x.Favorite.Id; return x.Item; }).Take(PageSize).ToArray();
             }
             viewModel.Dates = await _cache.GetOrCreateAsync("NewsDates", entry =>
             {
@@ -63,7 +65,7 @@ namespace Supperxin.ListenNews.Controllers
                         {
                             DateString = g.Key.ToString("yyyy-MM-dd"),
                             Count = g.Count()
-                        }).Take(30).ToArrayAsync();
+                        }).Take(DateSize).ToArrayAsync();
             });
             //.GroupBy(i => i.Created.Date).OrderByDescending(i => i.Key).Take(10).SelectMany().ToArrayAsync();
 
@@ -86,108 +88,6 @@ namespace Supperxin.ListenNews.Controllers
             }
 
             return View(item);
-        }
-
-        // GET: News/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: News/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Url,Title,Content,Category,Source,Created,CrawledTime,AudioStatus,AudioErrorMessage")] Item item)
-        {
-            if (ModelState.IsValid)
-            {
-                _context.Add(item);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(item);
-        }
-
-        // GET: News/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var item = await _context.Item.FindAsync(id);
-            if (item == null)
-            {
-                return NotFound();
-            }
-            return View(item);
-        }
-
-        // POST: News/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Url,Title,Content,Category,Source,Created,CrawledTime,AudioStatus,AudioErrorMessage")] Item item)
-        {
-            if (id != item.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(item);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ItemExists(item.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(item);
-        }
-
-        // GET: News/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var item = await _context.Item
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (item == null)
-            {
-                return NotFound();
-            }
-
-            return View(item);
-        }
-
-        // POST: News/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var item = await _context.Item.FindAsync(id);
-            _context.Item.Remove(item);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
         }
 
         private bool ItemExists(int id)

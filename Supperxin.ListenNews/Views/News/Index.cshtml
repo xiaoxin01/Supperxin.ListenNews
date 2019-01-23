@@ -48,6 +48,11 @@
                         ele.text(result.message);
                         ele.unbind('click');
                     }
+                },
+                error: function(jqXHR, textStatus, errorThrown){
+                    if(jqXHR.status === 401) {
+                        window.location.href = jqXHR.getResponseHeader('Location');
+                    }
                 }
             });
         })
