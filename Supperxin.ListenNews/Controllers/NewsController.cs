@@ -33,17 +33,22 @@ namespace Supperxin.ListenNews.Controllers
             var dateEnd = queryDate.Date.AddDays(1);
 
             var viewModel = new NewsViewModel();
-            viewModel.News = await _context.Item.Where(i => i.Created >= dateStart && i.Created < dateEnd).Take(120).ToArrayAsync();
-            if (null != User)
+            if (null == User)
             {
-                var user = _userManager.GetUserAsync(User);
+                viewModel.News = await _context.Item.Where(i => i.Created >= dateStart && i.Created < dateEnd).Take(120).ToArrayAsync();
+            }
+            else
+            {
+                var user = await _userManager.GetUserAsync(User);
+                // query items with user's favorite status
                 var query = from item in _context.Item
-                            join favorite in _context.Favorite on item.Id equals favorite.ItemId into itemsWithFavorite
+                            join favorite in (from f in _context.Favorite where f.UserId == user.Id && !f.Deleted select f)
+                            on item.Id equals favorite.ItemId into itemsWithFavorite
                             from itemWithFavorite in itemsWithFavorite.DefaultIfEmpty()
                             where item.Created >= dateStart && item.Created < dateEnd
                             select new { Item = item, Favorite = itemWithFavorite };
 
-                viewModel.News = query.ToList().Select(x => { if (null != x.Favorite) x.Item.FavoriteId = x.Favorite.Id; return x.Item; }).ToArray();
+                viewModel.News = (await query.ToListAsync()).Select(x => { if (null != x.Favorite) x.Item.FavoriteId = x.Favorite.Id; return x.Item; }).ToArray();
             }
             viewModel.Dates = await _cache.GetOrCreateAsync("NewsDates", entry =>
             {

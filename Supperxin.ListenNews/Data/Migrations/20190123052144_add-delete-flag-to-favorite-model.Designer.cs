@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Supperxin.ListenNews.Data;
@@ -9,9 +10,10 @@ using Supperxin.ListenNews.Data;
 namespace Supperxin.ListenNews.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190123052144_add-delete-flag-to-favorite-model")]
+    partial class adddeleteflagtofavoritemodel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -185,13 +187,9 @@ namespace Supperxin.ListenNews.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<DateTime?>("Created");
-
                     b.Property<bool>("Deleted");
 
                     b.Property<int>("ItemId");
-
-                    b.Property<DateTime?>("Modified");
 
                     b.Property<string>("Url");
 

@@ -14,8 +14,16 @@
 <ul class="list-group list-group-flush">
     @foreach (var item in Model.News) {
         <li class="list-group-item d-flex justify-content-between align-items-center">
-            <a data-toggle="collapse" href="#@item.Source@item.Id"><span class="badge badge-light">@index</span> @item.Title</a>
-            <span class="badge"><small>@item.Created.ToString("yyyy-MM-dd")</small> <a href="@item.Url" target="_blank">原文</a></span>
+            <a class="btn btn-link" data-toggle="collapse" href="#@item.Source@item.Id"><span class="badge badge-light">@index</span> @item.Title</a>
+            <span class="badge">
+                <small>@item.Created.ToString("yyyy-MM-dd")</small>
+                @if(@item.Favorited) {
+                    <a class="btn btn-link" id="favorite" data-favorite-id="@item.FavoriteId" data-item-id="@item.Id" data-url="@item.Url">★</a>
+                } else {
+                    <a class="btn btn-link" id="favorite" data-favorite-id="@item.FavoriteId" data-item-id="@item.Id" data-url="@item.Url">☆</a>
+                }
+                <a href="@item.Url" target="_blank">原文</a>
+            </span>
         </li>
         <div class="collapse" id="@item.Source@item.Id">
             <div class="card card-body">
@@ -25,3 +33,23 @@
         index++;
     }
 </ul>
+
+@section Scripts {
+    <script>
+        $('a#favorite').click(function(e){
+            var ele = $(this);
+            $.ajax({
+                type: 'POST',
+                url: '/api/Favorites',
+                data: JSON.stringify(ele.data()),
+                contentType: 'application/json',
+                success:function(result){
+                    if(result.status) {
+                        ele.text(result.message);
+                        ele.unbind('click');
+                    }
+                }
+            });
+        })
+    </script>
+}

@@ -22,5 +22,7 @@ namespace Supperxin.ListenNews.Models
 
         [NotMapped]
         public int FavoriteId { get; set; }
+
+        public bool Favorited { get { return 0 != FavoriteId; } }
     }
 }

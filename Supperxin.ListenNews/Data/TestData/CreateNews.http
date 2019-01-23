@@ -1,0 +1,23 @@
+POST /api/Items/PostItems HTTP/1.1
+Host: localhost:5000
+Content-Type: application/json
+Cache-Control: no-cache
+
+[  
+   {  
+        "Url":"http://tech.qq.com/a/20190122/011390.htm",
+        "Title":"百度被指沦为百家号导流工具，周二大跌逾 6%",
+        "Content":"北京时间 1 月 23 日早间消息，百度股价周二大跌，截至收盘，百度报 160.39 美元，跌幅达 6.40%，市值 556.00 亿美元 ... 1 月 22 日晚，自媒体新闻实验室一篇名为《搜索引擎百度已死》的文章刷屏 ... 文章指责百度搜索结果一半以上会指向百度自家产品，尤其是百家号",
+        "Category": "Technical",
+        "Source": "Tentcent_News",
+        "Created": "2019-1-22"
+   },
+   {  
+        "Url":"http://tech.qq.com/a/20190122/011360.htm",
+        "Title":"高通副总裁：苹果打击高通意在打击中国对手",
+        "Content":"在不久前的一场采访中，苹果首席诉讼律师、副总裁 NoreenKrall 对记者表示，手机设备制造商、芯片制造商，还有代工厂，他们的证词都是惊人的一致，（诉讼）并不是苹果对抗高通，而是整个行业和高通的对抗，无授权无芯片的绑定必须要结束",
+        "Category": "Technical",
+        "Source": "Tentcent_News",
+        "Created": "2019-1-22"
+   }
+]

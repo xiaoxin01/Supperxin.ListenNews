@@ -30,7 +30,7 @@ namespace Supperxin.ListenNews.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Favorite>>> GetFavorite()
         {
-            return await _context.Favorite.ToListAsync();
+            return await _context.Favorite.Take(10).ToListAsync();
         }
 
         // GET: api/Favorites/5
@@ -47,52 +47,25 @@ namespace Supperxin.ListenNews.Controllers
             return favorite;
         }
 
-        // PUT: api/Favorites/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutFavorite(int id, Favorite favorite)
-        {
-            if (id != favorite.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(favorite).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!FavoriteExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
         // POST: api/Favorites
         [HttpPost]
         public async Task<ActionResult<Favorite>> PostFavorite(Favorite favorite)
         {
             var user = await _userManager.GetUserAsync(User);
-            var existFavorite = _context.Favorite.FirstOrDefaultAsync(f => f.ItemId == favorite.ItemId && f.UserId == user.Id);
+            var existFavorite = await _context.Favorite.FirstOrDefaultAsync(f => f.ItemId == favorite.ItemId && !f.Deleted && f.UserId == user.Id);
             if (null != existFavorite)
             {
-                return CreatedAtAction("GetFavorite", new { id = existFavorite.Id }, existFavorite);
+                existFavorite.Deleted = true;
+                existFavorite.Modified = DateTime.Now;
+                await _context.SaveChangesAsync();
+                return Ok(new { status = 1, message = "☆" });
             }
 
             favorite.UserId = user.Id;
             _context.Favorite.Add(favorite);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetFavorite", new { id = favorite.Id }, favorite);
+            return Ok(new { status = 1, message = "★" });
         }
 
         // DELETE: api/Favorites/5
