@@ -28,7 +28,10 @@ namespace Supperxin.ListenNews.Controllers
                         on item.Id equals favorite.ItemId
                         select new { Item = item, Favorite = favorite };
 
-            var items = (await query.ToListAsync()).Select(x => { x.Item.FavoriteId = x.Favorite.Id; return x.Item; }).Take(PageSize).ToArray();
+            var items = (await query.ToListAsync())
+                .Select(x => { x.Item.FavoriteId = x.Favorite.Id; return x.Item; })
+                .OrderByDescending(i => i.Created)
+                .Take(PageSize).ToArray();
 
             return View(items);
         }
