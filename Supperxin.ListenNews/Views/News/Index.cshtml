@@ -51,7 +51,11 @@
                 },
                 error: function(jqXHR, textStatus, errorThrown){
                     if(jqXHR.status === 401) {
-                        window.location.href = jqXHR.getResponseHeader('Location');
+                        var currentUrl = window.location.href;
+                        var location = jqXHR.getResponseHeader('Location');
+                        var loginUrl = location.split('?')[0];
+                        var targetUrl = loginUrl + '?ReturnUrl=' + encodeURIComponent(window.location.pathname + window.location.search);
+                        window.location.href = targetUrl;
                     }
                 }
             });
