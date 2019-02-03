@@ -5,33 +5,7 @@
     var index = 1;
 }
 
-
-<div class="row">
-    @foreach (var item in Model) {
-        <div class="col-sm-12">
-            <div class="card border-light">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-sm-8">
-                            <a class="text-dark" data-toggle="collapse" href="#@item.Source@item.Id"><span class="badge badge-light">@index</span> @item.Title</a>
-                        </div>
-                        <div class="col-sm-4 text-right">
-                            <small>@item.Created.ToString("MM-dd")</small>
-                            @if(@item.Favorited) {
-                                <a class="text-dark" href="###" id="favorite" data-favorite-id="@item.FavoriteId" data-item-id="@item.Id" data-url="@item.Url">★</a>
-                            } else {
-                                <a class="text-dark" href="###" id="favorite" data-favorite-id="@item.FavoriteId" data-item-id="@item.Id" data-url="@item.Url">☆</a>
-                            }
-                            <a class="text-dark" href="@item.Url" target="_blank">原文</a>
-                        </div>
-                    </div>
-                    <p class="card-text collapse" id="@item.Source@item.Id">@item.Content</p>
-                </div>
-            </div>
-        </div>
-        index++;
-    }
-</div>
+@await Html.PartialAsync("_NewsListView", Model)
 
 @section Scripts {
     <script>
