@@ -36,7 +36,7 @@ namespace Supperxin.ListenNews.Controllers
                 var query = from i in _context.Item
                             join l in _context.ListenHistory on i.Id equals l.ItemId into ItemListenHistory
                             from il in ItemListenHistory.DefaultIfEmpty()
-                            where il == null && i.AudioStatus == 1
+                            where il == null // && i.AudioStatus == 1
                             select i;
 
                 return await query.Where(i => i.Id <= index).OrderByDescending(i => i.Id).Take(count).ToListAsync();
@@ -139,6 +139,7 @@ namespace Supperxin.ListenNews.Controllers
 
             if (result.ErrorCode == 0)  // 或 result.Success
             {
+                SetAudioStatusSuccess(item);
                 if (!System.IO.Directory.Exists(System.IO.Path.GetDirectoryName(audio)))
                 {
                     System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(audio));
@@ -147,6 +148,12 @@ namespace Supperxin.ListenNews.Controllers
             }
 
             return result;
+        }
+
+        private void SetAudioStatusSuccess(Item item)
+        {
+            item.AudioStatus = 1;
+            _context.SaveChanges();
         }
 
         // // PUT: api/Items/5

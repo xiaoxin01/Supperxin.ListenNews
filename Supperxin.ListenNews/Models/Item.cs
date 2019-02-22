@@ -8,6 +8,7 @@ namespace Supperxin.ListenNews.Models
         public Item()
         {
             this.CrawledTime = DateTime.Now;
+            this.Created = DateTime.Now;
         }
         public int Id { get; set; }
         public string Url { get; set; }
