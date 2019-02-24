@@ -17,8 +17,8 @@ namespace Supperxin.ListenNews.Controllers
         private readonly ApplicationDbContext _context;
         private IMemoryCache _cache;
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly int PageSize = 120;
-        private readonly int DateSize = 30;
+        private readonly int PageSize = 120 * 2;
+        private readonly int DateSize = 10;
 
         public NewsController(ApplicationDbContext context, IMemoryCache cache, UserManager<IdentityUser> userManager)
         {
