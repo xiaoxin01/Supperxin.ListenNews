@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 using Supperxin.ListenNews.Data;
 using Supperxin.ListenNews.Models;
 
@@ -17,14 +18,17 @@ namespace Supperxin.ListenNews.Controllers
         private readonly ApplicationDbContext _context;
         private IMemoryCache _cache;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly string[] _nonePublicSources;
         private readonly int PageSize = 120 * 2;
         private readonly int DateSize = 10;
 
-        public NewsController(ApplicationDbContext context, IMemoryCache cache, UserManager<IdentityUser> userManager)
+        public NewsController(ApplicationDbContext context, IMemoryCache cache, UserManager<IdentityUser> userManager, IConfiguration configuration)
         {
             _context = context;
             _cache = cache;
             _userManager = userManager;
+
+            _nonePublicSources = configuration.GetSection("NonePublicSources").Get<string[]>();
         }
 
         // GET: News
@@ -38,7 +42,7 @@ namespace Supperxin.ListenNews.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (null == user)
             {
-                viewModel.News = await _context.Item.Where(i => i.Created >= dateStart && i.Created < dateEnd).Take(PageSize).ToArrayAsync();
+                viewModel.News = await _context.Item.Where(i => i.Created >= dateStart && i.Created < dateEnd && !_nonePublicSources.Contains(i.Source)).Take(PageSize).ToArrayAsync();
             }
             else
             {
