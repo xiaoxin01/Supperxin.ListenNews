@@ -7,7 +7,11 @@
 <div class="row">
     <div class="col-12">
         @foreach (var dateCount in Model.Dates) {
+            if (dateCount.Visited) {
+            <a class="btn btn-success" asp-route-date="@dateCount.DateString">@dateCount.DateString <span class="badge">@dateCount.Count</span></a>
+            } else {
             <a class="btn btn-light" asp-route-date="@dateCount.DateString">@dateCount.DateString <span class="badge">@dateCount.Count</span></a>
+            }
         }
     </div>
 </div>

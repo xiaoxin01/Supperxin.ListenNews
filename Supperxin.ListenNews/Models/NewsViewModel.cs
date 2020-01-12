@@ -10,5 +10,6 @@ namespace Supperxin.ListenNews.Models
     {
         public string DateString { get; set; }
         public int Count { get; set; }
+        public bool Visited { get; set; }
     }
 }
